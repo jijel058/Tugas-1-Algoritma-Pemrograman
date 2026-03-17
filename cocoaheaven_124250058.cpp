@@ -13,16 +13,26 @@ struct Barang{
     int stok;
 };
 
-int bandingString(char a[], char b[]){
+int bandingString(const char a[], const char b[]){
     int i=0;
     while(a[i] != '\0' && b[i] != '\0'){
-        if(a[i] != b[i]) return 1;
+        if(a[i] != b[i])
+            return a[i]-b[i];
         i++;
     }
-    if(a[i]=='\0' && b[i]=='\0')
-        return 0;
-    else
-        return 1;
+    return a[i]-b[i];
+}
+
+void pause(){
+    cout<<"\nPress any key to continue...";
+    getchar();
+    getchar();
+    system("cls");
+}
+
+void success(){
+    cout<<"\nData berhasil disimpan!\n";
+    pause();
 }
 
 void bubbleSort(Barang b[], int n){
@@ -61,11 +71,34 @@ void quickSort(Barang b[], int low, int high){
     if(i<high) quickSort(b,i,high);
 }
 
+void sortNama(Barang b[], int n){
+
+    for(int i=0;i<n-1;i++){
+        for(int j=0;j<n-i-1;j++){
+
+            if(bandingString(b[j].nama,b[j+1].nama) > 0){
+
+                Barang temp=b[j];
+                b[j]=b[j+1];
+                b[j+1]=temp;
+
+            }
+        }
+    }
+}
+
 void tambahKaryawan(){
 
     FILE *fp=fopen("karyawan.txt","a");
 
+    if(fp==NULL){
+        cout<<"\nFile error\n";
+        return;
+    }
+
     int n;
+
+    cout<<"\n=== Tambah Karyawan ===\n";
     cout<<"Jumlah karyawan: ";
     cin>>n;
 
@@ -73,42 +106,61 @@ void tambahKaryawan(){
     Karyawan *ptr=k;
 
     for(int i=0;i<n;i++){
-
-        cout<<"ID: ";
+		
+		
+        cout<<"ID karyawan: ";
         cin>>(ptr+i)->id;
 
-        cout<<"Nama: ";
+        cout<<"Nama karyawan: ";
         cin>>(ptr+i)->nama;
+        cout<<" \n";
 
         fprintf(fp,"%d %s\n",(ptr+i)->id,(ptr+i)->nama);
     }
 
     fclose(fp);
+    success();
 }
 
 void lihatKaryawan(){
 
     FILE *fp=fopen("karyawan.txt","r");
 
-    Karyawan k;
+    if(fp==NULL){
+        cout<<"\nData kosong\n";
+        pause();
+        return;
+    }
 
-    cout<<"\nData Karyawan\n";
+    Karyawan k;
+    int i=1;
+
+    cout<<"\n=== Data Karyawan ===\n";
 
     while(fscanf(fp,"%d %s",&k.id,k.nama)!=EOF){
-
+		
+		cout<<"Karyawan Ke-"<<i<<endl;
         cout<<"ID : "<<k.id<<endl;
         cout<<"Nama : "<<k.nama<<endl;
-        cout<<"----------------\n";
+        i++;
     }
 
     fclose(fp);
+    pause();
 }
 
 void cariKaryawan(){
 
     FILE *fp=fopen("karyawan.txt","r");
 
+    if(fp==NULL){
+        cout<<"\nData kosong\n";
+        pause();
+        return;
+    }
+
     int id;
+    cout<<"\n=== Cari Karyawan ===\n";
     cout<<"Masukkan ID: ";
     cin>>id;
 
@@ -119,64 +171,88 @@ void cariKaryawan(){
 
         if(k.id==id){
 
-            cout<<"Data ditemukan\n";
-            cout<<"ID: "<<k.id<<endl;
-            cout<<"Nama: "<<k.nama<<endl;
+            cout<<"\nData ditemukan!\n";
+            cout<<"ID : "<<k.id<<endl;
+            cout<<"Nama : "<<k.nama<<endl;
             found=true;
         }
     }
 
     if(!found)
-    cout<<"Data tidak ditemukan\n";
+        cout<<"Data tidak ditemukan\n";
 
     fclose(fp);
+    pause();
 }
 
 void tambahBarang(){
 
     FILE *fp=fopen("barang.txt","a");
 
+    if(fp==NULL){
+        cout<<"File error\n";
+        return;
+    }
+
     int n;
+
+    cout<<"=== Tambah Barang ===\n";
     cout<<"Jumlah barang: ";
     cin>>n;
 
     Barang b[n];
     Barang *ptr=b;
 
+    cin.ignore();
+
     for(int i=0;i<n;i++){
 
-        cout<<"Nama: ";
-        cin>>(ptr+i)->nama;
+        cout<<"\nBarang ke-"<<i+1<<endl;
 
-        cout<<"Harga: ";
+        cout<<"Nama Barang: ";
+        cin.getline((ptr+i)->nama,50);
+
+        cout<<"Harga Barang: ";
         cin>>(ptr+i)->harga;
 
-        cout<<"Stok: ";
+        cout<<"Stok Barang: ";
         cin>>(ptr+i)->stok;
+        cout<<" \n";
+        cin.ignore();
 
-        fprintf(fp,"%s %d %d\n",(ptr+i)->nama,(ptr+i)->harga,(ptr+i)->stok);
+        fprintf(fp,"%s|%d|%d\n",(ptr+i)->nama,(ptr+i)->harga,(ptr+i)->stok);
     }
 
     fclose(fp);
+    success();
 }
 
-void lihatBarang(){
+ void lihatBarang(){
 
     FILE *fp=fopen("barang.txt","r");
+
+    if(fp==NULL){
+        cout<<"Data kosong\n";
+        pause();
+        return;
+    }
 
     Barang b[100];
     int n=0;
 
-    while(fscanf(fp,"%s %d %d",b[n].nama,&b[n].harga,&b[n].stok)!=EOF){
+    while(fscanf(fp,"%[^|]|%d|%d\n",b[n].nama,&b[n].harga,&b[n].stok)!=EOF){
         n++;
     }
 
     fclose(fp);
 
     int pilih;
-
+    
+    cout<<"\n=== Lihat Barang ===\n";
     cout<<"1 Ascending\n";
     cout<<"2 Descending\n";
+    cout<<"======================\n";
+    cout<<"Pilih: ";
     cin>>pilih;
 
     if(pilih==1)
@@ -184,86 +260,203 @@ void lihatBarang(){
     else
         quickSort(b,0,n-1);
 
-    for(int i=0;i<n;i++){
+    cout<<"\n=== Data Barang ===\n";
 
+    for(int i=0;i<n;i++){
+		
+		cout<<"\nBarang ke-"<<i+1<<endl;
         cout<<"Nama : "<<b[i].nama<<endl;
         cout<<"Harga : "<<b[i].harga<<endl;
         cout<<"Stok : "<<b[i].stok<<endl;
-        cout<<"----------------\n";
+        cout<<"\n-----------------\n";
     }
+
+    pause();
 }
 
 void editBarang(){
 
     FILE *fp=fopen("barang.txt","r");
 
+    if(fp==NULL){
+        cout<<"\nData kosong\n";
+        pause();
+        return;
+    }
+
     Barang b[100];
     int n=0;
 
-    while(fscanf(fp,"%s %d %d",b[n].nama,&b[n].harga,&b[n].stok)!=EOF){
+    while(fscanf(fp,"%[^|]|%d|%d\n",b[n].nama,&b[n].harga,&b[n].stok)!=EOF){
         n++;
     }
 
     fclose(fp);
 
     char cari[50];
+    
+    cout<<"=== Edit barang ===\n";
     cout<<"Nama barang: ";
-    cin>>cari;
+    cin.ignore();
+    cin.getline(cari,50);
+
+    bool found=false;
 
     for(int i=0;i<n;i++){
 
         if(bandingString(b[i].nama,cari)==0){
 
-            cout<<"Data lama\n";
-            cout<<b[i].nama<<" "<<b[i].harga<<" "<<b[i].stok<<endl;
+            cout<<"\nData ditemukan\n";
 
-            cout<<"Nama baru: ";
-            cin>>b[i].nama;
+            cout<<"Nama : "<<b[i].nama<<endl;
+            cout<<"Harga : "<<b[i].harga<<endl;
+            cout<<"Stok : "<<b[i].stok<<endl;
 
-            cout<<"Harga baru: ";
+            cout<<"\nMasukkan data baru\n";
+
+            cout<<"Nama: ";
+            cin.getline(b[i].nama,50);
+
+            cout<<"Harga: ";
             cin>>b[i].harga;
 
-            cout<<"Stok baru: ";
+            cout<<"Stok: ";
             cin>>b[i].stok;
-        }
-    }
-
-    fp=fopen("barang.txt","w");
-
-    for(int i=0;i<n;i++){
-        fprintf(fp,"%s %d %d\n",b[i].nama,b[i].harga,b[i].stok);
-    }
-
-    fclose(fp);
-}
-
-void sequentialSearch(){
-
-    FILE *fp=fopen("barang.txt","r");
-
-    Barang b;
-    char cari[50];
-
-    cout<<"Nama barang: ";
-    cin>>cari;
-
-    bool found=false;
-
-    while(fscanf(fp,"%s %d %d",b.nama,&b.harga,&b.stok)!=EOF){
-
-        if(bandingString(b.nama,cari)==0){
-
-            cout<<"Ditemukan\n";
-            cout<<b.nama<<" "<<b.harga<<" "<<b.stok<<endl;
 
             found=true;
         }
     }
 
     if(!found)
-    cout<<"Tidak ditemukan\n";
+        cout<<"Data tidak ditemukan\n";
+
+    fp=fopen("barang.txt","w");
+
+    for(int i=0;i<n;i++){
+        fprintf(fp,"%s|%d|%d\n",b[i].nama,b[i].harga,b[i].stok);
+    }
 
     fclose(fp);
+    success();
+} 
+
+void sequentialSearch(){
+
+    FILE *fp=fopen("barang.txt","r");
+
+    if(fp==NULL){
+        cout<<"Data kosong\n";
+        pause();
+        return;
+    }
+
+    Barang b;
+    char cari[50];
+    
+    cout<<"=== Sequential Search ===\n";
+    cout<<"Nama barang: ";
+    cin.ignore();
+    cin.getline(cari,50);
+
+    bool found=false;
+
+    while(fscanf(fp,"%[^|]|%d|%d\n",b.nama,&b.harga,&b.stok)!=EOF){
+
+        if(bandingString(b.nama,cari)==0){
+
+            cout<<"\nData ditemukan!\n";
+            cout<<"Nama : "<<b.nama<<endl;
+            cout<<"Harga : "<<b.harga<<endl;
+            cout<<"Stok : "<<b.stok<<endl;
+
+            found=true;
+        }
+    }
+
+    if(!found)
+        cout<<"Data tidak ditemukan\n";
+
+    fclose(fp);
+    pause();
+}
+
+void binarySearch(){
+
+    FILE *fp=fopen("barang.txt","r");
+
+    if(fp==NULL){
+        cout<<"Data kosong\n";
+        pause();
+        return;
+    }
+
+    Barang b[100];
+    int n=0;
+
+    while(fscanf(fp,"%[^|]|%d|%d\n",b[n].nama,&b[n].harga,&b[n].stok)!=EOF){
+        n++;
+    }
+
+    fclose(fp);
+
+    sortNama(b,n);
+
+    char cari[50];
+    
+    cout<<"=== Binary Search ===\n";
+    cout<<"Nama barang: ";
+    cin.ignore();
+    cin.getline(cari,50);
+
+    int kiri=0;
+    int kanan=n-1;
+    bool found=false;
+
+    while(kiri<=kanan){
+
+        int mid=(kiri+kanan)/2;
+
+        int hasil=bandingString(b[mid].nama,cari);
+
+        if(hasil==0){
+
+            cout<<"\nData ditemukan!\n";
+            cout<<"Nama : "<<b[mid].nama<<endl;
+            cout<<"Harga : "<<b[mid].harga<<endl;
+            cout<<"Stok : "<<b[mid].stok<<endl;
+
+            found=true;
+            break;
+        }
+
+        else if(hasil<0)
+            kiri=mid+1;
+        else
+            kanan=mid-1;
+    }
+
+    if(!found)
+        cout<<"Data tidak ditemukan\n";
+
+    pause();
+}
+
+void cariBarang(){
+
+    int pilih;
+    
+    cout<<"=== Cari Barang ===\n";
+    cout<<"1 Sequential Search\n";
+    cout<<"2 Binary Search\n";
+    cout<<"====================\n";
+    cout<<"Pilih: ";
+    cin>>pilih;
+    system("cls");
+
+    if(pilih==1)
+        sequentialSearch();
+    else
+        binarySearch();
 }
 
 void menuAdmin(){
@@ -272,12 +465,16 @@ void menuAdmin(){
 
     do{
 
-        cout<<"\n Admin\n";
+        cout<<"\n=== Halo ADMIN! ===\n";
         cout<<"1 Tambah Karyawan\n";
         cout<<"2 Lihat Karyawan\n";
         cout<<"3 Cari Karyawan\n";
         cout<<"4 Logout\n";
+        cout<<"======================\n";
+        cout<<"Pilih: ";
         cin>>pilih;
+
+        system("cls");
 
         switch(pilih){
 
@@ -295,21 +492,24 @@ void menuKaryawan(){
 
     do{
 
-        cout<<"\nMenu Karyawan\n";
+        cout<<"\n=== Halo KARYAWAN! ===\n";
         cout<<"1 Tambah Barang\n";
         cout<<"2 Lihat Barang\n";
         cout<<"3 Edit Barang\n";
-        cout<<"4 Cari Barang (Sequential)\n";
+        cout<<"4 Cari Barang\n";
         cout<<"5 Logout\n";
-
+        cout<<"========================\n";
+        cout<<"Pilih: ";
         cin>>pilih;
+
+        system("cls");
 
         switch(pilih){
 
             case 1: tambahBarang(); break;
             case 2: lihatBarang(); break;
             case 3: editBarang(); break;
-            case 4: sequentialSearch(); break;
+            case 4: cariBarang(); break;
         }
 
     }while(pilih!=5);
@@ -321,13 +521,14 @@ int main(){
 
     do{
 
-        cout<<"\n====== WELCOME TO COCOA HEAVEN ======\n";
+        cout<<"\n===== WELCOME TO COCOA HEAVEN =====\n";
         cout<<"1 Login Admin\n";
         cout<<"2 Karyawan\n";
         cout<<"3 Keluar\n";
-        cout<<"\n=======================================\n";
-		cout<<"Masukkan Pilihan Menu: ";
+        cout<<"======================================\n";
+        cout<<"Pilih: ";
         cin>>pilih;
+
         system("cls");
 
         if(pilih==1){
@@ -344,16 +545,19 @@ int main(){
 
             if(bandingString(user,"admin")==0 && bandingString(pass,"123")==0){
 
+                system("cls");
                 menuAdmin();
             }
+
             else{
 
-                cout<<"Bukan Admin!\n";
+                cout<<"Login gagal, bukan admin!\n";
+                pause();
             }
         }
 
         if(pilih==2)
-        menuKaryawan();
+            menuKaryawan();
 
     }while(pilih!=3);
 
